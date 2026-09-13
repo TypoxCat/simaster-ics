@@ -1,3 +1,4 @@
+// Modified from the original SimasterICSGen project to support newer SIMASTER HTML formats.
 package simasterclass
 
 import (
@@ -35,7 +36,8 @@ func Parse(page io.Reader) []Class {
 	}
 
 	// Get info about what semester is this
-	semesterStr := doc.Find("#select2-sesiId-container").Text()
+	// Support both old (Select2) and new (plain HTML select) formats
+	semesterStr := getSemesterText(doc)
 	semStartTime := getSemStartTime(semesterStr)
 
 	classes := []Class{}
@@ -77,6 +79,31 @@ func Parse(page io.Reader) []Class {
 	return classes
 }
 
+// getSemesterText extracts the semester text from HTML document.
+// Supports both old format (Select2 widget) and new format (plain HTML select).
+// Old format: #select2-sesiId-container contains the selected text
+// New format: select[name='sesiId'] option:selected contains the selected text
+func getSemesterText(doc *goquery.Document) string {
+	// Try old format (Select2 widget)
+	semesterStr := doc.Find("#select2-sesiId-container").Text()
+	if semesterStr != "" {
+		return strings.TrimSpace(semesterStr)
+	}
+
+	// Try new format (plain HTML select)
+	semesterStr = doc.Find("select[name='sesiId'] option:selected").Text()
+	if semesterStr != "" {
+		return strings.TrimSpace(semesterStr)
+	}
+
+	// Fallback: try to find any selected option in the select element
+	doc.Find("select[name='sesiId'] option[selected]").Each(func(_ int, s *goquery.Selection) {
+		semesterStr = s.Text()
+	})
+
+	return strings.TrimSpace(semesterStr)
+}
+
 // Helper function to parse the string "Jumat, 13:00-16:40 Ruang D.TEDI DARING 10".
 // Returns startTime, endTime, place
 func getStartEndScheduleAndPlace(s string, startSem time.Time) (time.Time, time.Time, string) {
@@ -108,6 +135,13 @@ func parseHour(tS string) time.Time {
 func getSemStartTime(semStr string) time.Time {
 	re := regexp.MustCompile(`Semester (?P<Sem>(Gasal|Genap)) (?P<Year1>\d{4})\/(?P<Year2>\d{4})`)
 	match := re.FindStringSubmatch(semStr)
+
+	// Handle empty or invalid semester string
+	if len(match) == 0 {
+		log.Printf("Warning: Could not parse semester string: '%s'. Using default semester.", semStr)
+		// Return a default start time (first Monday of August)
+		return time.Date(time.Now().Year(), ODD_SEM_MONTH_START, 1, 0, 0, 0, 0, simastertime.TZ)
+	}
 
 	semester := match[re.SubexpIndex("Sem")]
 	year1, _ := strconv.Atoi(match[re.SubexpIndex("Year1")])

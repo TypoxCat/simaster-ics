@@ -1,22 +1,30 @@
-name: Build and Deploy simastericsgen-server
-on: [push]
+name: Deploy web app to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
 jobs:
   build-and-deploy:
-    concurrency: ci-${{ github.ref }} # Recommended if you intend to make multiple deployments in quick succession.
+    concurrency: github-pages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.16.1'
+          go-version: '1.22.x'
 
-      - run: make buildserver
+      - name: Build static web app
+        run: make buildpages
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.3.0
+        uses: JamesIves/github-pages-deploy-action@v4.7.3
         with:
-          branch: gh-pages # The branch the action should deploy to.
-          folder: output # The folder the action should deploy.
+          branch: gh-pages
+          folder: output
