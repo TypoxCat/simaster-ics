@@ -54,7 +54,7 @@ To deploy it:
 The app will be available at:
 
 ```text
-https://<your-username>.github.io/<repository-name>/
+https://typoxcat.github.io/simaster-ics/
 ```
 
 Every push to `main` rebuilds and republishes the web app automatically. Users
