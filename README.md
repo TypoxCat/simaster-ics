@@ -6,10 +6,11 @@ in the browser; uploaded files are not sent to a server.
 
 ## This fork
 
-This project is based on [SimasterICSGen](https://github.com/refeed/SimasterICSGen)
-by `refeed` and is licensed under the Apache License 2.0. This fork adds support
-for newer SIMASTER HTML formats, a redesigned minimal interface, improved file
-download handling, and a server fix for serving the web application.
+Originally created by [refeed](https://github.com/refeed/SimasterICSGen), this
+project is continued and maintained by [TypoxCat](https://github.com/TypoxCat/simaster-ics).
+It is licensed under the Apache License 2.0. This fork adds support for newer
+SIMASTER HTML formats, a redesigned minimal interface, improved file download
+handling, and a server fix for serving the web application.
 
 ## How to use
 
